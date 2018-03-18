@@ -12,9 +12,15 @@ class ToDoListVC: UITableViewController {
 
     var itemArray = ["Get Milk", "Go to the gym", "Take over the world!"]
     
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        // getting the array from the user default
+        if let items = defaults.array(forKey: "toDoListArray") as? [String] {
+            itemArray = items
+        }
     }
 
     //MARK - Create table view data sources methods
@@ -26,6 +32,7 @@ class ToDoListVC: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        
         cell.textLabel?.text  = itemArray[indexPath.row]
         return cell
     }
@@ -51,6 +58,10 @@ class ToDoListVC: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //What will happend once the user clicks the add item button on the UIAlert
             self.itemArray.append(textField.text!)
+            
+            //setting up the user deftauls
+            self.defaults.set(self.itemArray, forKey: "toDoListArray")
+            
             self.tableView.reloadData()
         }
         
