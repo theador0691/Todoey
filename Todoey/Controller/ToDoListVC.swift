@@ -13,25 +13,17 @@ class ToDoListVC: UITableViewController {
     var itemArray = [Item]()
     
     let defaults = UserDefaults.standard
-    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "Find Andy"
-        itemArray.append(newItem)
-        let newItem2 = Item()
-        newItem2.title = "Find the rat"
-        itemArray.append(newItem2)
-        let newItem3 = Item()
-        newItem3.title = "Find myself"
-        itemArray.append(newItem3)
         
+        print(dataFilePath)
+     
         // Do any additional setup after loading the view, typically from a nib.
         // getting the array from the user default
-        if let items = defaults.array(forKey: "toDoListArray") as? [Item] {
-            itemArray = items
-        }
+        loadItems()
     }
 
     //MARK - Create table view data sources methods
@@ -46,6 +38,7 @@ class ToDoListVC: UITableViewController {
         let item = itemArray[indexPath.row]
         cell.textLabel?.text  = item.title
         cell.accessoryType = item.done ? .checkmark : .none
+
         return cell
     }
     
@@ -54,8 +47,10 @@ class ToDoListVC: UITableViewController {
       //  print(itemArray[indexPath.row])
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-        
+
+        saveItems()
         tableView.reloadData()
+
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -71,8 +66,7 @@ class ToDoListVC: UITableViewController {
             newItem.title = textField.text!
             self.itemArray.append(newItem)
             //setting up the user deftauls
-            self.defaults.set(self.itemArray, forKey: "toDoListArray")
-            
+            self.saveItems()
             self.tableView.reloadData()
         }
         
@@ -87,5 +81,24 @@ class ToDoListVC: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }catch {
+            print(error)
+        }
+    }
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+            }catch {
+                print(error)
+            }
+        }
+    }
 }
 
