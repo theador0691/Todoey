@@ -7,10 +7,12 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoryTableViewController: UITableViewController {
 
+    let realm = try! Realm()
+    
     var categoriesArray = [Category]()
     let defaults = UserDefaults.standard
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -33,37 +35,41 @@ class CategoryTableViewController: UITableViewController {
     }
     
     //Mark: Data Manipulation Methods
-    func saveCategories(){
+    func saveCategories(category: Category){
         do{
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         }catch {
             print("error saving context \(error)")
         }
     }
-    func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()){
+    func loadCategories(){
         
-        do{
-            categoriesArray =  try context.fetch(request)
-        } catch {
-            print(error)
-        }
-        tableView.reloadData()
-        
+//        do{
+//            categoriesArray =  try context.fetch(request)
+//        } catch {
+//            print(error)
+//        }
+//        tableView.reloadData()
+    
     }
     //MARK: Add Categories
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
-        let alert = UIAlertController(title: "Add new Todoy Item", message: "" , preferredStyle: .alert)
+        let alert = UIAlertController(title: "Add new Category", message: "" , preferredStyle: .alert)
         var textField = UITextField()
-        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+        
+        let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             //What will happend once the user clicks the add item button on the UIAlert
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             newCategory.name = textField.text!
-            //setting up the user deftauls
-            self.saveCategories()
+
+            self.saveCategories(category: newCategory)
             self.loadCategories()
             self.tableView.reloadData()
         }
+        
         alert.addAction(action)
 
         //adding the text field to the alert
