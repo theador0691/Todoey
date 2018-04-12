@@ -13,10 +13,10 @@ class CategoryTableViewController: UITableViewController {
 
     let realm = try! Realm()
     
-    var categoriesArray = [Category]()
+    var categories: Results<Category>?
     let defaults = UserDefaults.standard
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategories()
@@ -24,13 +24,13 @@ class CategoryTableViewController: UITableViewController {
     //MARK: Table View Data Source
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoriesArray.count
+        return categories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        let category = categoriesArray[indexPath.row]
-        cell.textLabel?.text  = category.name
+
+        cell.textLabel?.text  = categories?[indexPath.row].name ?? "No Categories Added Yet"
         return cell
     }
     
@@ -45,13 +45,9 @@ class CategoryTableViewController: UITableViewController {
         }
     }
     func loadCategories(){
+         categories = realm.objects(Category.self)
         
-//        do{
-//            categoriesArray =  try context.fetch(request)
-//        } catch {
-//            print(error)
-//        }
-//        tableView.reloadData()
+        tableView.reloadData()
     
     }
     //MARK: Add Categories
@@ -90,7 +86,7 @@ class CategoryTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var destinationVC = segue.destination as! ToDoListVC
         if let indexPath = tableView.indexPathForSelectedRow{
-            destinationVC.selectedCategory = categoriesArray[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row]
             
         }
     }
